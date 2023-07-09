@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { CustomerResolver } from './customer.resolver';
 import { CustomerController } from './customer.controller';
 import { APP_GUARD } from '@nestjs/core';
@@ -30,6 +30,6 @@ import { JwtModule } from '@nestjs/jwt';
 })
 export class CustomerModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes('*');
+    consumer.apply(AuthenticationMiddleware).forRoutes('customer/*');
   }
 }

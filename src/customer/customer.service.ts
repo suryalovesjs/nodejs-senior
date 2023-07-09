@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { CreateCustomerInputDto } from './dto/customer.input';
 import { hash } from 'bcrypt';
-import { Customer, ROLES } from 'src/lib';
-import { generateRandomCode } from 'src/lib';
+import { Customer, ROLES, generateRandomCode } from '../lib';
 
 @Injectable()
 export class CustomerService {
@@ -112,16 +111,21 @@ export class CustomerService {
       throw new Error('No data');
     }
 
-    return this.prisma.customer.update({
+    const { email, role } = await this.prisma.customer.update({
       where: { id },
       data,
     });
+
+    return { id, email, role };
   }
   async deleteCustomer({ id }: { id: string }) {
     if (!id) {
       throw new Error('No id provided for customer deletion.');
     }
 
-    return this.prisma.customer.delete({ where: { id } });
+    const { email, role } = await this.prisma.customer.delete({
+      where: { id },
+    });
+    return { id, email, role };
   }
 }

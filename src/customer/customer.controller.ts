@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerInputDto } from './dto/customer.input';
-import { Customer, ROLES, Roles } from 'src/lib';
+import { Customer, ROLES, Roles } from '../lib';
 
 @Roles(ROLES.USER)
 @Controller('customer')
@@ -38,12 +38,14 @@ export class CustomerController {
     return this.customerService.getAllCustomers();
   }
 
+  @Roles(ROLES.ADMIN)
   @Post()
   @UsePipes(new ValidationPipe())
   async createUser(@Body() userData: CreateCustomerInputDto) {
     return this.customerService.createCustomer(userData);
   }
 
+  @Roles(ROLES.ADMIN)
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
@@ -52,10 +54,9 @@ export class CustomerController {
     return this.customerService.updateCustomer({ id, data: userData });
   }
 
-  @Delete()
-  async deleteUser(@Query() params: { id: string }) {
-    const { id } = params;
-
+  @Roles(ROLES.ADMIN)
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string) {
     if (!id) {
       throw new Error('No valid ID customer deletion.');
     }

@@ -29,10 +29,8 @@ export class AuthenticationMiddleware implements NestMiddleware {
         id: decoded.userId,
       });
 
-      this.logger.log('User info', user);
-      req['user'] = user; // Attach the user object to the request
+      req['user'] = user;
     } catch (error) {
-      // Handle token verification error
       this.logger.error('Error Validating token', error);
     }
 

@@ -5,12 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-// import { CustomerService } from 'src/customer/customer.service';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { CreateCustomerInputDto } from 'src/customer/dto/customer.input';
-import { ROLES } from 'src/lib/enums';
+import { ROLES } from '../lib/enums';
 import { compare, hash } from 'bcrypt';
-import { Customer } from 'src/lib';
+import { Customer } from '../lib';
 
 interface JwtPayload {
   userId: string;
@@ -22,13 +21,45 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly jwtService: JwtService,
-    // private readonly customerService: CustomerService,
     private prisma: PrismaService,
   ) {}
 
-  async signup(createUserDto: Required<CreateCustomerInputDto>): Promise<any> {
-    // // const newUser = await this.prisma.createCustomer(createUserDto);
-    // return newUser;
+  async signup(
+    createUserDto: CreateCustomerInputDto,
+  ): Promise<{ id: string; role: string; activated: boolean }> {
+    const activationCode = Math.random().toString(36).substr(2, 6);
+    const hashedPassword = await hash(createUserDto.password, 10);
+
+    const newUser = await this.prisma.customer.create({
+      data: {
+        ...createUserDto,
+        password: hashedPassword,
+        activationCode,
+      },
+    });
+
+    const { id, role, activated } = newUser;
+
+    return { id, role, activated };
+  }
+
+  async verifyAccount(
+    activationCode: string,
+  ): Promise<{ id: string; activated: boolean }> {
+    const customer = await this.prisma.customer.findFirst({
+      where: { activationCode },
+    });
+
+    if (!customer) {
+      throw new BadRequestException('Invalid activation code');
+    }
+
+    const { id, activated } = await this.prisma.customer.update({
+      where: { id: customer.id },
+      data: { activated: true },
+    });
+
+    return { id, activated };
   }
 
   async login(
@@ -39,6 +70,12 @@ export class AuthService {
 
     if (!user) {
       throw new BadRequestException('No User found');
+    }
+
+    if (!user.activated) {
+      throw new UnauthorizedException(
+        'Account not activated. Please activate your account before attempting to login.',
+      );
     }
 
     const passwordMatch = await compare(password, user.password);
