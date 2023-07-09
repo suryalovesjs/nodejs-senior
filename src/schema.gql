@@ -3,7 +3,7 @@
 # ------------------------------------------------------
 
 type Customer {
-  id: ID!
+  id: String!
 
   """Date and time when object was created."""
   createdAt: Timestamp!
@@ -11,6 +11,18 @@ type Customer {
   """Date and time when the object was updated last time."""
   updatedAt: Timestamp!
   email: String!
+
+  """Activation"""
+  activated: Boolean!
+
+  """Activation code"""
+  activationCode: String
+
+  """Password"""
+  password: String
+
+  """Role of the user"""
+  role: String!
 }
 
 """
@@ -34,4 +46,14 @@ input WhereCustomerInput {
   email: String
   createdAt: Timestamp
   updatedAt: Timestamp
+}
+
+type Mutation {
+  createCustomer(data: CreateCustomerInputDto!): Customer!
+  updateCustomer(id: String!, data: CreateCustomerInputDto!): Customer!
+  deleteCustomer(id: String!): Customer!
+}
+
+input CreateCustomerInputDto {
+  password: String!
 }

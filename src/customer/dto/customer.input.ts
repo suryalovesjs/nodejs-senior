@@ -1,5 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { Prisma } from '@prisma/client';
+import { IsEmail, MinLength } from 'class-validator';
 
 @InputType()
 export class WhereCustomerInput {
@@ -29,4 +30,14 @@ export class GetCustomerInput {
 
   @Field(() => WhereCustomerInput, { nullable: true })
   where: WhereCustomerInput;
+}
+
+@InputType()
+export class CreateCustomerInputDto {
+  @IsEmail()
+  email: string;
+
+  @Field(() => String)
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  password: string;
 }
