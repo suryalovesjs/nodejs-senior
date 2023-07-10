@@ -88,7 +88,9 @@ describe('CustomerController', () => {
       };
       const createdCustomer = { id: '123', ...userData };
 
-      jest.spyOn(service, 'createCustomer').mockResolvedValue(createdCustomer);
+      jest
+        .spyOn(service, 'createCustomer')
+        .mockResolvedValue(createdCustomer as any);
 
       const result = await controller.createUser(userData);
 

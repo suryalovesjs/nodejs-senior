@@ -17,7 +17,6 @@ export class CustomerService {
     email?: string;
     id?: string;
   }): Promise<Customer> {
-    this.logger.log(`Email:: ${email}`);
     const customers = await this.prisma.customer.findFirst({
       where: {
         OR: [
@@ -43,32 +42,11 @@ export class CustomerService {
     return customers;
   }
 
-  async authenticateCustomer({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }): Promise<any> {
-    return this.prisma.customer.findFirst({
-      where: {
-        email,
-        password: await hash(password, 10),
-      },
-      select: {
-        id: true,
-        email: true,
-        createdAt: true,
-      },
-    });
-  }
   async getAllCustomers(): Promise<any> {
     return await this.prisma.customer.findMany();
   }
 
-  async createCustomer(
-    user: CreateCustomerInputDto,
-  ): Promise<CreateCustomerInputDto> {
+  async createCustomer(user: CreateCustomerInputDto): Promise<Customer> {
     const { password, ...userData } = user;
     const hashedPassword = await hash(password, 10);
     const activationCode = generateRandomCode(5);

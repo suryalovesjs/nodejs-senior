@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma.service';
 import { CreateCustomerInputDto } from 'src/customer/dto/customer.input';
 import { ROLES } from '../lib/enums';
 import { compare, hash } from 'bcrypt';
-import { Customer } from '../lib';
+import { generateRandomCode } from '../lib';
 
 interface JwtPayload {
   userId: string;
@@ -27,7 +27,7 @@ export class AuthService {
   async signup(
     createUserDto: CreateCustomerInputDto,
   ): Promise<{ id: string; role: string; activated: boolean }> {
-    const activationCode = Math.random().toString(36).substr(2, 6);
+    const activationCode = generateRandomCode(5);
     const hashedPassword = await hash(createUserDto.password, 10);
 
     const newUser = await this.prisma.customer.create({
@@ -66,7 +66,21 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const user = await this.loginCustomer({ email });
+    const user = await this.prisma.customer.findFirst({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+        role: true,
+        activated: true,
+        password: true,
+        activationCode: true,
+      },
+    });
 
     if (!user) {
       throw new BadRequestException('No User found');
@@ -113,23 +127,5 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-  }
-
-  private async loginCustomer({ email }: { email: string }): Promise<Customer> {
-    return this.prisma.customer.findFirst({
-      where: {
-        email,
-      },
-      select: {
-        id: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-        role: true,
-        activated: true,
-        password: true,
-        activationCode: true,
-      },
-    });
   }
 }

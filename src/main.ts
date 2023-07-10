@@ -11,7 +11,7 @@ async function bootstrap() {
     bufferLogs: true,
     cors: true,
   });
-  // app.useLogger(app.get(PinoLogger));
+
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
   const config = new DocumentBuilder()

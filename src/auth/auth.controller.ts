@@ -10,10 +10,15 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/auth.dto';
 import { RolesGuard } from '../role.guard';
+import { ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: 'User Signup' })
+  @ApiResponse({ status: 201, description: 'User successfully signed up' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   @Post('signup')
   async signup(
     @Body(new ValidationPipe()) createUserDto: Required<LoginDto>,
@@ -22,6 +27,9 @@ export class AuthController {
     return user;
   }
 
+  @ApiOperation({ summary: 'User Login' })
+  @ApiResponse({ status: 200, description: 'User logged in successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Post('login')
   async login(
     @Body(new ValidationPipe()) loginDto: LoginDto,
@@ -33,6 +41,9 @@ export class AuthController {
     return { token };
   }
 
+  @ApiOperation({ summary: 'Verify Account' })
+  @ApiResponse({ status: 200, description: 'Account verified successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   @Get('verify/:activationCode')
   async verifyAccount(
     @Param('activationCode') activationCode: string,
@@ -41,6 +52,12 @@ export class AuthController {
     return customer;
   }
 
+  @ApiOperation({ summary: 'Refresh Access Token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Access token refreshed successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Post('refresh-token')
   @UseGuards(RolesGuard)
   async refreshAccessToken(

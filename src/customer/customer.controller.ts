@@ -14,6 +14,7 @@ import {
 import { CustomerService } from './customer.service';
 import { CreateCustomerInputDto } from './dto/customer.input';
 import { Customer, ROLES, Roles } from '../lib';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Roles(ROLES.USER)
 @Controller('customer')
@@ -38,6 +39,9 @@ export class CustomerController {
     return this.customerService.getAllCustomers();
   }
 
+  @ApiOperation({ summary: 'Create Customer' })
+  @ApiResponse({ status: 201, description: 'Customer created successfully!' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   @Roles(ROLES.ADMIN)
   @Post()
   @UsePipes(new ValidationPipe())
